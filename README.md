@@ -4,6 +4,19 @@ A transparent, consent-based family safety and device management platform with r
 
 ---
 
+## 🌐 Custom Cloudflare Domain (Free Permanent Edge Proxy)
+
+FamilyLink Guardian is integrated with your Cloudflare Account without disturbing existing services:
+
+- **Public Web Dashboard**: [**https://familylink-guardian.aryan76688.workers.dev**](https://familylink-guardian.aryan76688.workers.dev)
+- **Live Google Maps Radar**: [**https://familylink-guardian.aryan76688.workers.dev/map**](https://familylink-guardian.aryan76688.workers.dev/map)
+- **AI Safety Hub**: [**https://familylink-guardian.aryan76688.workers.dev/ai**](https://familylink-guardian.aryan76688.workers.dev/ai)
+- **Public API Endpoint**: `https://familylink-api.aryan76688.workers.dev`
+
+> **Note on Existing Domains**: The existing Cloudflare workers and domains from Marg ERP (`https://shreeji-envelope.aryan76688.workers.dev` and `https://shreeji-order.aryan76688.workers.dev`) remain completely untouched and independent. FamilyLink Guardian runs alongside them as an additional dedicated worker service.
+
+---
+
 ## 📱 Pre-Compiled Android APKs (1-Click Download)
 
 Directly download and install on your Android phones:
