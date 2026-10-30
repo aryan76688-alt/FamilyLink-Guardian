@@ -1,0 +1,39 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist/
+.next/
+out/
+build/
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Android / Gradle
+.gradle/
+build/
+local.properties
+*.apk
+!downloads/*.apk
+!web/public/downloads/*.apk
+*.aab
+*.jks
+*.keystore
+.idea/
+*.iml
+.DS_Store
+
+# Logs & PIDs
+logs/
+*.log
+*.pid
+
+# Docker
+docker-data/

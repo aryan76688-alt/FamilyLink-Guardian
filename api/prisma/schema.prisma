@@ -1,0 +1,341 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  GUARDIAN
+  MEMBER
+}
+
+enum DeviceStatus {
+  ACTIVE
+  REVOKED
+  PENDING
+}
+
+enum SessionType {
+  CAMERA
+  VOICE
+  SCREEN
+}
+
+enum SessionStatus {
+  REQUESTED
+  ACTIVE
+  REJECTED
+  ENDED
+}
+
+enum SyncState {
+  PENDING
+  UPLOADING
+  UPLOADED
+  VERIFIED
+  BACKED_UP
+  EXPIRED_LOCAL
+}
+
+model User {
+  id            String        @id @default(uuid())
+  email         String        @unique
+  password      String
+  name          String
+  role          Role          @default(GUARDIAN)
+  familyGroupId String?
+  familyGroup   FamilyGroup?  @relation(fields: [familyGroupId], references: [id])
+  devices       Device[]
+  notifications Notification[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model FamilyGroup {
+  id          String         @id @default(uuid())
+  name        String
+  guardianId  String
+  members     User[]
+  devices     Device[]
+  geofences   GeofenceZone[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Device {
+  id              String            @id @default(uuid())
+  name            String
+  userId          String?
+  user            User?             @relation(fields: [userId], references: [id])
+  familyGroupId   String
+  familyGroup     FamilyGroup       @relation(fields: [familyGroupId], references: [id])
+  status          DeviceStatus      @default(ACTIVE)
+  platform        String            @default("Android")
+  appVersion      String            @default("1.0.0")
+  lastSeenAt      DateTime          @default(now())
+  isOnline        Boolean           @default(false)
+  battery         Int               @default(100)
+  networkType     String            @default("WIFI")
+  keys            DeviceKeys?
+  permissions     DevicePermissions?
+  sessions        DeviceSession[]
+  locations       LocationPoint[]
+  mediaFiles      MediaFile[]
+  syncJobs        SyncJob[]
+  consents        Consent[]
+  auditLogs       AuditLog[]
+  sosAlerts       SOSAlert[]
+  geofenceEvents  GeofenceEvent[]
+  activityLogs    ActivityLog[]
+  focusConfig     FocusModeConfig?
+  lastGaspBeacons LastGaspBeacon[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model DeviceKeys {
+  id          String   @id @default(uuid())
+  deviceId    String   @unique
+  device      Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  publicKey   String
+  createdAt   DateTime @default(now())
+}
+
+model DevicePermissions {
+  id                 String   @id @default(uuid())
+  deviceId           String   @unique
+  device             Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  locationEnabled    Boolean  @default(true)
+  cameraEnabled      Boolean  @default(false)
+  microphoneEnabled  Boolean  @default(false)
+  screenShareEnabled Boolean  @default(false)
+  callHistoryEnabled Boolean  @default(false)
+  cloudBackupEnabled Boolean  @default(true)
+  locationInterval   Int      @default(30)
+  updatedAt          DateTime @updatedAt
+}
+
+model DeviceSession {
+  id          String        @id @default(uuid())
+  deviceId    String
+  device      Device        @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  type        SessionType
+  status      SessionStatus @default(REQUESTED)
+  startedAt   DateTime      @default(now())
+  endedAt     DateTime?
+  requestedBy String
+}
+
+model LocationPoint {
+  id              String   @id @default(uuid())
+  deviceId        String
+  device          Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  latitude        Float
+  longitude       Float
+  accuracy        Float?
+  speed           Float?
+  heading         Float?
+  battery         Int?
+  isOfflineQueued Boolean  @default(false)
+  timestamp       DateTime
+  syncedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([deviceId, timestamp])
+}
+
+model MediaFile {
+  id                 String       @id @default(uuid())
+  deviceId           String
+  device             Device       @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  type               SessionType
+  filename           String
+  size               Int
+  mimeType           String
+  checksum           String
+  syncState          SyncState    @default(PENDING)
+  storagePath        String?
+  driveFileId        String?
+  localRetentionDays Int          @default(10)
+  uploadedAt         DateTime?
+  backedUpAt         DateTime?
+  driveBackups       DriveBackup[]
+  createdAt          DateTime     @default(now())
+}
+
+model SyncJob {
+  id           String    @id @default(uuid())
+  deviceId     String
+  device       Device    @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  type         String
+  status       SyncState @default(PENDING)
+  itemCount    Int       @default(1)
+  checksum     String?
+  errorMessage String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model DriveBackup {
+  id           String    @id @default(uuid())
+  mediaFileId  String
+  mediaFile    MediaFile @relation(fields: [mediaFileId], references: [id], onDelete: Cascade)
+  driveFileId  String
+  drivePath    String
+  backupStatus String    @default("SUCCESS")
+  checksum     String
+  backedUpAt   DateTime  @default(now())
+}
+
+model Consent {
+  id        String    @id @default(uuid())
+  deviceId  String
+  device    Device    @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  feature   String
+  granted   Boolean   @default(true)
+  grantedAt DateTime  @default(now())
+  revokedAt DateTime?
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String
+  actorType String
+  deviceId  String?
+  device    Device?  @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  action    String
+  result    String
+  metadata  Json?
+  ipAddress String?
+  timestamp DateTime @default(now())
+
+  @@index([deviceId, timestamp])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  type      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model AIRequest {
+  id          String   @id @default(uuid())
+  guardianId  String
+  prompt      String
+  response    String
+  model       String   @default("gemini-1.5-flash")
+  tokenCount  Int?
+  createdAt   DateTime @default(now())
+}
+
+enum SOSStatus {
+  ACTIVE
+  RESOLVED
+  CANCELLED
+}
+
+enum SOSReason {
+  MANUAL_SOS
+  FALL_DETECTED
+  CRASH_DETECTED
+}
+
+model SOSAlert {
+  id                String     @id @default(uuid())
+  deviceId          String
+  device            Device     @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  status            SOSStatus  @default(ACTIVE)
+  reason            SOSReason  @default(MANUAL_SOS)
+  latitude          Float
+  longitude         Float
+  address           String?
+  battery           Int?
+  audioRecordingUrl String?
+  resolvedBy        String?
+  startedAt         DateTime   @default(now())
+  resolvedAt        DateTime?
+  createdAt         DateTime   @default(now())
+
+  @@index([deviceId, status])
+}
+
+model GeofenceZone {
+  id                 String          @id @default(uuid())
+  familyGroupId      String
+  familyGroup        FamilyGroup     @relation(fields: [familyGroupId], references: [id], onDelete: Cascade)
+  name               String
+  type               String          @default("SAFE") // SAFE, SCHOOL, HOME, WORK, DANGER
+  polygonCoordinates Json?           // Array of {lat: number, lng: number}
+  centerLat          Float?
+  centerLng          Float?
+  radiusMeters       Float?          // For circular zones
+  notifyOnEnter      Boolean         @default(true)
+  notifyOnExit       Boolean         @default(true)
+  events             GeofenceEvent[]
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  @@index([familyGroupId])
+}
+
+model GeofenceEvent {
+  id             String       @id @default(uuid())
+  deviceId       String
+  device         Device       @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  geofenceZoneId String
+  geofenceZone   GeofenceZone @relation(fields: [geofenceZoneId], references: [id], onDelete: Cascade)
+  eventType      String       // ENTER, EXIT
+  latitude       Float
+  longitude      Float
+  timestamp      DateTime     @default(now())
+
+  @@index([deviceId, timestamp])
+}
+
+model ActivityLog {
+  id           String   @id @default(uuid())
+  deviceId     String
+  device       Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  activityType String   // IN_VEHICLE, ON_BICYCLE, WALKING, RUNNING, STILL, UNKNOWN
+  confidence   Int      @default(100) // 0 - 100
+  speedKmh     Float?
+  timestamp    DateTime @default(now())
+
+  @@index([deviceId, timestamp])
+}
+
+model FocusModeConfig {
+  id             String   @id @default(uuid())
+  deviceId       String   @unique
+  device         Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  enabled        Boolean  @default(false)
+  modeName       String   @default("Study Focus")
+  scheduledStart String?  // e.g. "18:00"
+  scheduledEnd   String?  // e.g. "21:00"
+  dndActive      Boolean  @default(false)
+  blockedApps    Json?    // List of package names
+  updatedAt      DateTime @updatedAt
+}
+
+model LastGaspBeacon {
+  id            String   @id @default(uuid())
+  deviceId      String
+  device        Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  latitude      Float
+  longitude     Float
+  batteryLevel  Int
+  wifiSsid      String?
+  cellInfo      String?
+  triggerReason String   // BATTERY_CRITICAL, SHUTDOWN
+  timestamp     DateTime @default(now())
+
+  @@index([deviceId, timestamp])
+}
