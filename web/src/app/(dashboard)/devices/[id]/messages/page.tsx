@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { mockMessages, initialDevices } from '@/lib/mockData';
+import { mockMessages } from '@/lib/mockData';
+import { useFleetDevices } from '@/lib/useFleetDevices';
 import { MemberAvatar } from '@/components/ui/MemberAvatar';
 import {
   ArrowLeft,
@@ -17,7 +18,16 @@ export default function MessagesPage() {
   const router = useRouter();
   const params = useParams();
   const deviceId = (params?.id as string) || '2';
-  const device = initialDevices.find((d) => d.id === deviceId) || initialDevices[1];
+  const { devices } = useFleetDevices();
+  const device = devices.find((d) => d.id === deviceId) || devices[0] || {
+    id: deviceId,
+    name: 'Android Mobile Device',
+    memberName: 'Family Member',
+    isOnline: true,
+    lastSeen: 'Live GPS',
+    battery: 100,
+    networkType: '5G' as const,
+  };
 
   const [activeTab, setActiveTab] = useState<'sms' | 'integrations'>('sms');
 

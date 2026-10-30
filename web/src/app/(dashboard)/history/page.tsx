@@ -1,23 +1,25 @@
 'use client';
 
 import React, { useState } from 'react';
-import { mockLocationHistory, initialDevices } from '@/lib/mockData';
-import { GoogleMapsFleetView, defaultCoordinates } from '@/components/ui/GoogleMapsFleetView';
+import { useFleetDevices } from '@/lib/useFleetDevices';
+import { mockLocationHistory } from '@/lib/mockData';
+import { GoogleMapsFleetView } from '@/components/ui/GoogleMapsFleetView';
 import {
   History,
   Calendar,
   Download,
   Clock,
   Navigation,
+  Smartphone,
 } from 'lucide-react';
 
 export default function LocationHistoryPage() {
+  const { devices, selectedDevice, setSelectedDevice, pairingInfo } = useFleetDevices();
   const [selectedRange, setSelectedRange] = useState<'today' | '7days' | '30days' | 'custom'>('today');
-  const [selectedDevice, setSelectedDevice] = useState(initialDevices[1]); // Mom Phone
   const [timeline] = useState(mockLocationHistory);
 
   const handleExport = (format: 'csv' | 'json') => {
-    alert(`Exporting Location History for ${selectedDevice.name} as ${format.toUpperCase()}... File generated.`);
+    alert(`Exporting Location History for ${selectedDevice?.name || 'Device'} as ${format.toUpperCase()}...`);
   };
 
   return (
@@ -27,7 +29,7 @@ export default function LocationHistoryPage() {
         <div>
           <h2 className="text-xl sm:text-2xl font-extrabold text-[#10243E] dark:text-white tracking-tight flex items-center gap-2">
             <History className="w-6 h-6 text-[#087CF5]" />
-            Location History & Route Playback
+            Location History &amp; Route Playback
           </h2>
           <p className="text-xs text-[#718096] dark:text-[#94A3B8] mt-0.5">
             Verified timeline of movements and locations visited on Google Maps
@@ -36,20 +38,22 @@ export default function LocationHistoryPage() {
 
         <div className="flex items-center gap-2">
           {/* Device Selector */}
-          <select
-            value={selectedDevice.id}
-            onChange={(e) => {
-              const d = initialDevices.find((x) => x.id === e.target.value);
-              if (d) setSelectedDevice(d);
-            }}
-            className="px-3 py-2 rounded-xl bg-white dark:bg-[#0D2035] border border-slate-200 dark:border-slate-700 text-xs font-semibold text-[#10243E] dark:text-white outline-none"
-          >
-            {initialDevices.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.name}
-              </option>
-            ))}
-          </select>
+          {devices.length > 0 && (
+            <select
+              value={selectedDevice?.id || ''}
+              onChange={(e) => {
+                const d = devices.find((x) => x.id === e.target.value);
+                if (d) setSelectedDevice(d);
+              }}
+              className="px-3 py-2 rounded-xl bg-white dark:bg-[#0D2035] border border-slate-200 dark:border-slate-700 text-xs font-semibold text-[#10243E] dark:text-white outline-none"
+            >
+              {devices.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          )}
 
           {/* Export Dropdown */}
           <div className="flex items-center gap-1">
@@ -96,23 +100,26 @@ export default function LocationHistoryPage() {
 
         <div className="flex items-center gap-2 px-3 py-1 text-xs text-[#718096] dark:text-[#94A3B8]">
           <Calendar className="w-3.5 h-3.5" />
-          <span>October 12, 2026 (All Day)</span>
+          <span>Real-time GPS Historical Waypoints</span>
         </div>
       </div>
 
-      {/* Full Google Map with Waypoints & Safe Zone */}
+      {/* Full Google Map with Waypoints */}
       <div className="h-80 w-full rounded-3xl overflow-hidden border border-[#E4EAF2] dark:border-[#1E3A5A] shadow-lg relative">
         <GoogleMapsFleetView
-          devices={initialDevices}
+          devices={devices}
           selectedDevice={selectedDevice}
           onSelectDevice={(device) => setSelectedDevice(device)}
           mapHeight="320px"
           onNavigate={(device) => {
-            const coord = defaultCoordinates[device.id];
-            if (coord) {
-              window.open(`https://www.google.com/maps/dir/?api=1&destination=${coord.lat},${coord.lng}`, '_blank');
+            if (device.lat && device.lng) {
+              window.open(
+                `https://www.google.com/maps/dir/?api=1&destination=${device.lat},${device.lng}`,
+                '_blank'
+              );
             }
           }}
+          pairingCode={pairingInfo?.code || 'HW25ML'}
         />
       </div>
 

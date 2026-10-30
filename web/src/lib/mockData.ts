@@ -1,75 +1,7 @@
 import { DeviceData } from '../components/ui/DeviceCard';
 import { PermissionItem } from '../components/ui/PermissionCard';
 
-export const initialDevices: DeviceData[] = [
-  {
-    id: '1',
-    name: 'Aryan (This device)',
-    memberName: 'Aryan',
-    isThisDevice: true,
-    isOnline: true,
-    lastSeen: '1 min ago',
-    battery: 82,
-    isCharging: true,
-    networkType: '5G',
-    locationName: 'Central High School Corridor',
-    distance: '1.4 mi (8m ETA)',
-    activeFeature: 'Live GPS Active',
-  },
-  {
-    id: '2',
-    name: 'Mom Phone',
-    memberName: 'Mom',
-    isThisDevice: false,
-    isOnline: true,
-    lastSeen: '2 min ago',
-    battery: 68,
-    isCharging: false,
-    networkType: 'WIFI',
-    locationName: 'Westwood Medical Center',
-    distance: '4.2 mi away',
-  },
-  {
-    id: '3',
-    name: 'Dad Phone',
-    memberName: 'Dad',
-    isThisDevice: false,
-    isOnline: true,
-    lastSeen: '3 min ago',
-    battery: 54,
-    isCharging: false,
-    networkType: '5G',
-    locationName: 'Metro Tech Park, Tower B (Driving • 28 mph)',
-    distance: '7.8 mi away',
-  },
-  {
-    id: '4',
-    name: 'Sister Phone',
-    memberName: 'Sister (Maya)',
-    isThisDevice: false,
-    isOnline: false,
-    lastSeen: '1 hour ago',
-    battery: 22,
-    isCharging: false,
-    networkType: 'OFFLINE',
-    locationName: 'Lincoln Middle School (Last Seen)',
-    distance: '2.1 mi away',
-    activeFeature: 'Low Power Standby',
-  },
-  {
-    id: '5',
-    name: 'Tablet',
-    memberName: 'Family Tablet',
-    isThisDevice: false,
-    isOnline: true,
-    lastSeen: '5 min ago',
-    battery: 90,
-    isCharging: false,
-    networkType: 'WIFI',
-    locationName: 'Home Perimeter (Living Room)',
-    distance: '0.0 mi away',
-  },
-];
+export const initialDevices: DeviceData[] = [];
 
 export const mockLocationHistory = [
   {

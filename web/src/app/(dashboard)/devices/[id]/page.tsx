@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
-import { initialDevices } from '@/lib/mockData';
+import { useFleetDevices } from '@/lib/useFleetDevices';
 import { MemberAvatar } from '@/components/ui/MemberAvatar';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { BatteryIndicator } from '@/components/ui/BatteryIndicator';
@@ -32,8 +32,20 @@ export default function DeviceDetailPage() {
   const params = useParams();
   const deviceId = (params?.id as string) || '1';
 
+  const { devices } = useFleetDevices();
   const device =
-    initialDevices.find((d) => d.id === deviceId) || initialDevices[1];
+    devices.find((d) => d.id === deviceId) ||
+    devices[0] || {
+      id: deviceId,
+      name: 'Android Mobile Device',
+      memberName: 'Family Member',
+      isOnline: false,
+      lastSeen: 'Awaiting sync',
+      battery: 100,
+      networkType: '4G' as const,
+      locationName: 'Location sync ready',
+      distance: 'Ready',
+    };
 
   const [activeSession, setActiveSession] = useState<string | null>(null);
 

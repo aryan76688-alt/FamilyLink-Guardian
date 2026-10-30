@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { initialDevices } from '@/lib/mockData';
+import { useFleetDevices } from '@/lib/useFleetDevices';
 import {
   ArrowLeft,
   Maximize2,
@@ -19,7 +19,16 @@ export default function ScreenMirrorPage() {
   const router = useRouter();
   const params = useParams();
   const deviceId = (params?.id as string) || '1';
-  const device = initialDevices.find((d) => d.id === deviceId) || initialDevices[0];
+  const { devices } = useFleetDevices();
+  const device = devices.find((d) => d.id === deviceId) || devices[0] || {
+    id: deviceId,
+    name: 'Android Mobile Device',
+    memberName: 'Family Member',
+    isOnline: true,
+    lastSeen: 'Live GPS',
+    battery: 100,
+    networkType: '5G' as const,
+  };
 
   const [isPaused, setIsPaused] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);

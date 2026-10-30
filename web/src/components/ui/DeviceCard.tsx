@@ -17,6 +17,15 @@ export interface DeviceData {
   locationName?: string;
   distance?: string;
   activeFeature?: string;
+  lat?: number;
+  lng?: number;
+  speed?: number;
+  heading?: number;
+  accuracy?: number;
+  platform?: string;
+  address?: string;
+  leashActive?: boolean;
+  leashRadius?: number;
 }
 
 interface DeviceCardProps {

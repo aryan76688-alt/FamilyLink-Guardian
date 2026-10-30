@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { X, QrCode, Shield, CheckCircle2, ArrowRight, Smartphone, RefreshCw, Key } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, QrCode, Shield, CheckCircle2, ArrowRight, Smartphone, RefreshCw, Key, Download } from 'lucide-react';
+import { api, ensureAuthToken } from '@/lib/api';
 
 interface AddDeviceModalProps {
   isOpen: boolean;
@@ -17,8 +18,28 @@ export const AddDeviceModal: React.FC<AddDeviceModalProps> = ({
   const [step, setStep] = useState<number>(1);
   const [memberName, setMemberName] = useState('');
   const [deviceName, setDeviceName] = useState('');
-  const [pairingCode] = useState('742-891');
-  const [codeExpiry] = useState('04:59');
+  const [pairingCode, setPairingCode] = useState('HW25ML');
+  const [codeExpiry, setCodeExpiry] = useState('14:59');
+  const [isLoadingCode, setIsLoadingCode] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const fetchCode = async () => {
+      try {
+        setIsLoadingCode(true);
+        await ensureAuthToken();
+        const res = await api.get('/api/auth/pairing-code');
+        if (res.data?.code) {
+          setPairingCode(res.data.code);
+        }
+      } catch (e) {
+        console.warn('Pairing code fetch error:', e);
+      } finally {
+        setIsLoadingCode(false);
+      }
+    };
+    fetchCode();
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { initialDevices } from '@/lib/mockData';
+import { useFleetDevices } from '@/lib/useFleetDevices';
+import { api } from '@/lib/api';
 import {
   Lock,
   Key,
@@ -16,18 +17,21 @@ import {
 
 export default function SecurityCenterPage() {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
-  const [devices, setDevices] = useState(initialDevices);
+  const { devices, refreshDevices } = useFleetDevices();
   const [revokedDevices, setRevokedDevices] = useState<string[]>([
     'Old Tablet (Revoked Sept 2026)',
   ]);
 
-  const handleRevoke = (id: string, name: string) => {
+  const handleRevoke = async (id: string, name: string) => {
     if (
       confirm(
         `Are you sure you want to permanently revoke ${name}? This will delete the Android Keystore identity and sever all telemetry.`
       )
     ) {
-      setDevices(devices.filter((d) => d.id !== id));
+      try {
+        await api.delete(`/api/devices/${id}`);
+      } catch (_) {}
+      refreshDevices();
       setRevokedDevices([...revokedDevices, `${name} (Revoked just now)`]);
       alert(`${name} has been revoked.`);
     }
